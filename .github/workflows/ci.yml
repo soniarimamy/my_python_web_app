@@ -36,11 +36,14 @@ jobs:
         run: |
           Write-Host "Début du déploiement local..."
           
-          $DOCKERHUB_USERNAME="${{ secrets.DOCKERHUB_USERNAME }}"
-          $IMAGE_NAME="mon-site-flask"
-          $TAG="latest"
-          $FULL_IMAGE="$DOCKERHUB_USERNAME/$IMAGE_NAME:$TAG"
-          $CONTAINER_NAME="flask-app"
+          $DOCKERHUB_USERNAME = "${{ secrets.DOCKERHUB_USERNAME }}"
+          $IMAGE_NAME = "mon-site-flask"
+          $TAG = "latest"
+          # CORRECTION ICI : Utilisez ${...} pour éviter le problème avec le :
+          $FULL_IMAGE = "${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${TAG}"
+          $CONTAINER_NAME = "flask-app"
+          
+          Write-Host "Image à déployer: $FULL_IMAGE"
           
           # Pull latest image
           docker pull $FULL_IMAGE
@@ -61,9 +64,10 @@ jobs:
           # Check if container is running
           Start-Sleep -Seconds 5
           if (docker ps | Select-String $CONTAINER_NAME) {
-            Write-Host "Conteneur démarré avec succès"
+            Write-Host "✅ Conteneur démarré avec succès"
+            Write-Host "Application disponible sur http://localhost:5000"
           } else {
-            Write-Host "Échec du démarrage du conteneur"
+            Write-Host "❌ Échec du démarrage du conteneur"
             docker logs $CONTAINER_NAME
             exit 1
           }
